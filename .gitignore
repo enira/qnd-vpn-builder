@@ -265,7 +265,5 @@ qnd/env/
 qnd/base/
 binaries/
 qndvpnbuilder.db
-qnd/
-install/
-README.md
+vpnbuilder.db
 .vs/
