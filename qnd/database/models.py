@@ -27,7 +27,7 @@ class Network(db.Model):
     port = db.Column(db.Integer)
     netmask = db.Column(db.Integer)
     ip = db.Column(db.String)
-    status = db.Column(db.String(1))
+    status = db.Column(db.String())
 
 class Client(db.Model):
     """
@@ -41,7 +41,7 @@ class Client(db.Model):
 
     network_id = db.Column(db.Integer, db.ForeignKey('networks.id'))                 
     network = db.relationship('Network', foreign_keys=[network_id], lazy='immediate')  
-    status = db.Column(db.String(1))
+    status = db.Column(db.String())
 
 class ACL(db.Model):
     """
