@@ -15,9 +15,10 @@ class Network(db.Model):
     """
     A network object
     The status can be
-        - created: 
+        - created 
         - updated
         - healthy
+        - deleted
         - failed
     """
     __tablename__ = 'networks'

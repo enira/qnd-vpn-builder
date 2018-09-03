@@ -66,4 +66,15 @@ chattr +c /opt/qndvpnbuilder/data/deploy
 systemctl start qnd
 systemctl enable qnd
 
+wget https://peervpn.net/files/peervpn-0-044-linux-x86.tar.gz -O /tmp/peervpn-0-044-linux-x86.tar.gz
+cd /tmp
+
+tar xzvf /tmp/peervpn*
+
+mkdir /etc/peervpn
+cp /tmp/peervpn*/peervpn /usr/local/bin
+cp /tmp/peervpn*/peervpn.conf /etc/peervpn/
+	
+rm -rf /tmp/peervpn
+
 rm -rf /opt/qndvpnbuilder/qnd-vpn-builder-master

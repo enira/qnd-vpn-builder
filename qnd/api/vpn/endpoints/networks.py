@@ -31,7 +31,7 @@ class NetworkCollection(Resource):
     def post(self):
         """
         Creates a new network.
-        * Send a JSON object with the pool details request body.
+        * Send a JSON object with the network details request body.
         ```
         {
             'name': 'Name of the network'
@@ -84,5 +84,5 @@ class NetworkItem(Resource):
         """
         Deletes a network.
         """
-        delete_pool(id)
+        delete_network(id)
         return None, 204

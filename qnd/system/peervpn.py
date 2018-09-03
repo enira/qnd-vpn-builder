@@ -22,6 +22,8 @@ class PeerVPN(object):
     __lock = threading.Lock()
     __instance = None
 
+    _delay = 0
+
     _local = False
     _username = None
     _password = None
@@ -55,8 +57,21 @@ class PeerVPN(object):
 
 
     def initialize_scheduler(self):
-        # null
-        pass
+        """
+        Initialize the schedulere. Create all tasks that need to be runned.
+        """
+
+        log.info("Creating scheduler...")
+        # initialize the scheduler
+        self._scheduler = BackgroundScheduler()
+
+        # run
+        self._scheduler.add_job(self.task_networks, 'cron', minute='*', second='*/5', id='task_networks', max_instances=1, coalesce=True)
+        self._scheduler.add_job(self.task_clients, 'cron', minute='*', second='*/5', id='task_clients', max_instances=1, coalesce=True)
+
+        self._scheduler.start()
+
+        log.info('Scheduler initialized')
 
     def initialize_networks(self):
         # read from database
@@ -71,11 +86,18 @@ class PeerVPN(object):
 
     def status_network(self, network):
         connection = Bridge(self._hostname, self._username, self._password, self._local)
+        result = connection.sudo_command('systemctl status peervpn' + str(network.id) + ' | grep -i Active: | awk \'{ print $2 }\'', self._password)
+
 
         connection.disconnect()
 
+        return str(result[len(result) - 1])
+
     def add_network(self, network):
         connection = Bridge(self._hostname, self._username, self._password, self._local)
+
+        # small fix
+        result = connection.sudo_command('mkdir /etc/peervpn', self._password)
 
         # check if the service exists
         
@@ -102,7 +124,7 @@ class PeerVPN(object):
         result = connection.sudo_command('systemctl start peervpn' + str(network.id) + '.service', self._password)
 
         # check if started
-        #systemctl status peervpn137 | grep -i Active | awk '{print $2}'
+        result = connection.sudo_command('systemctl status peervpn' + str(network.id) + '  | grep -i Active | awk \'{print $2}\' ', self._password)
 
         connection.disconnect()
 
@@ -195,3 +217,67 @@ class PeerVPN(object):
             config = config + line + "\n"
 
         return config
+
+    def task_clients(self):
+        session = db.session
+        session.close()
+
+    def task_networks(self):
+        """
+        Check up on tasks
+        """
+        
+
+        
+        session = db.session
+        # get all networks that require creation
+        created = session.query(Network).filter(Network.status == "created").all()
+        for service in created:
+            service.status = "creating"
+            db.session.add(service)
+            db.session.commit()
+
+            self.add_network(service)
+            service.status = "healthy"
+
+            db.session.add(service)
+            db.session.commit()
+
+        # get all networks that require redeploy
+        updated = session.query(Network).filter(Network.status == "updated").all()
+        for service in updated:
+            service.status = "updating"
+            db.session.add(service)
+            db.session.commit()
+
+            self.redeploy_network(service)
+            service.status = "healthy"
+            db.session.add(service)
+            db.session.commit()
+
+        # get all networks that require deleting
+        deleted = session.query(Network).filter(Network.status == "deleted").all()
+        for service in deleted:
+            service.status = "deleting"
+            db.session.add(service)
+            db.session.commit()
+
+            self.remove_network(service)
+            
+            db.session.delete(network)
+            db.session.commit()
+
+        self._delay = self._delay + 1
+
+        if self._delay > 6:
+            self._delay = 0
+            # check health of networks
+            all = session.query(Network).all()
+            for network in all:
+                if self.status_network(network) != "b'active'":
+                    network.status = "failed"
+                    db.session.add(network)
+                    db.session.commit()
+
+
+        session.close()

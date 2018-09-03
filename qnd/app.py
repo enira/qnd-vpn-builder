@@ -13,6 +13,8 @@ from api.restplus import api
 # import database
 from database import db
 import database
+from sqlalchemy.pool import QueuePool
+from sqlalchemy import create_engine
 
 from system.peervpn import PeerVPN
 
@@ -25,7 +27,6 @@ log.setLevel(logging.DEBUG)
 
 # flask
 app = Flask(__name__)
-
 database.assign(app)
 
 app.secret_key = settings.secret_key()
@@ -36,13 +37,17 @@ app.config['SWAGGER_UI_DOC_EXPANSION'] = settings.RESTPLUS_SWAGGER_UI_DOC_EXPANS
 app.config['RESTPLUS_VALIDATE'] = settings.RESTPLUS_VALIDATE
 app.config['RESTPLUS_MASK_SWAGGER'] = settings.RESTPLUS_MASK_SWAGGER
 app.config['ERROR_404_HELP'] = settings.RESTPLUS_ERROR_404_HELP
-#app.config['SQLALCHEMY_POOL_SIZE'] = settings.SQLALCHEMY_POOL_SIZE
-#app.config['SQLALCHEMY_MAX_OVERFLOW'] = settings.SQLALCHEMY_MAX_OVERFLOW
 app.config['SESSION_TYPE'] = settings.SESSION_TYPE
 
-
 db.init_app(app)
-
+"""
+engine = create_engine(
+    settings.SQLALCHEMY_DATABASE_URI, 
+    poolclass=QueuePool, 
+    pool_size=settings.SQLALCHEMY_POOL_SIZE, 
+    max_overflow=settings.SQLALCHEMY_MAX_OVERFLOW)
+db.engine = engine
+"""
 blueprint = Blueprint('api', __name__, url_prefix='/api')
 api.init_app(blueprint)
 
