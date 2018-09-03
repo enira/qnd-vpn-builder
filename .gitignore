@@ -266,4 +266,5 @@ qnd/base/
 binaries/
 qndvpnbuilder.db
 vpnbuilder.db
+qnd/config.ini
 .vs/
