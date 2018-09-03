@@ -8,7 +8,7 @@ apt-get update
 apt-get -y upgrade
 
 # install all needed packages
-apt-get -y install python python-pip build-essential libssl-dev libffi-dev python-dev git nginx unzip wget
+apt-get -y install python3 python3-pip build-essential libssl-dev libffi-dev python-dev git nginx unzip wget
 
 # create the vpn builder folder
 mkdir -p /opt/qndvpnbuilder/
@@ -30,6 +30,9 @@ systemctl restart nginx
 
 # on boot 
 systemctl enable nginx
+
+# create the service user
+adduser --system --no-create-home --group qnd
 
 # chown folder
 chown -R qnd:qnd /opt/qndvpnbuilder/qnd/
@@ -53,6 +56,9 @@ mount -o loop -t btrfs /opt/qndvpnbuilder/data.img /opt/qndvpnbuilder/data
 
 # make data folder
 mkdir -p /opt/qndvpnbuilder/data/deploy
+
+# change ownership
+chown qnd:qnd /opt/qndvpnbuilder/data/deploy
 
 # mark it as compressed
 chattr +c /opt/qndvpnbuilder/data/deploy
