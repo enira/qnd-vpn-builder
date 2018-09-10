@@ -6,6 +6,10 @@ setting = api.model('setting', {
     'value': fields.String(required=True, description='value'),
 })
 
+user = api.model('user', {
+    'username': fields.String(readOnly=True, description='Logged in user'),
+})
+
 system = api.model('system', {
     'cpu_load': fields.Integer(readOnly=True, description='CPU load (in percent)'),
     'cpu_num': fields.Integer(readOnly=True, description='Amount of cores'),
@@ -42,5 +46,31 @@ network_update = api.model('network_update', {
     'ip': fields.String(required=False, description='IP address'),
 })
 
+
+
+client = api.model('client', {
+    'id': fields.Integer(readOnly=True, description='The unique identifier of a client'),
+    'ip': fields.String(required=True, description='The IP of the client'),
+    'type': fields.String(required=True, description='Client type'),
+    'package': fields.String(required=True, description='Provisioned package'),
+    'network_id': fields.Integer(required=True, description='Network id associated'), 
+    'status': fields.String(required=True, description='Status'),
+})
+
+client_create = api.model('client_create', {
+    'ip': fields.String(required=True, description='The IP of the client'),
+    'type': fields.String(required=True, description='Client type'),
+    'package': fields.String(required=True, description='Provisioned package'),
+    'network_id': fields.Integer(required=True, description='Network id associated'), 
+    'status': fields.String(required=True, description='Status'),
+})
+
+client_update = api.model('client_update', {
+    'ip': fields.String(required=False, description='The IP of the client'),
+    'type': fields.String(required=False, description='Client type'),
+    'package': fields.String(required=False, description='Provisioned package'),
+    'network_id': fields.Integer(required=False, description='Network id associated'), 
+    'status': fields.String(required=False, description='Status'),
+})
 
 

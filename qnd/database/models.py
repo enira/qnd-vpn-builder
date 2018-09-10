@@ -37,12 +37,24 @@ class Client(db.Model):
     __tablename__ = 'clients'
     id = db.Column(db.Integer, primary_key=True)                       
     ip = db.Column(db.String)
-    image = db.Column(db.String(3))   
+    type = db.Column(db.String(3))   
     package = db.Column(db.String)
 
     network_id = db.Column(db.Integer, db.ForeignKey('networks.id'))                 
     network = db.relationship('Network', foreign_keys=[network_id], lazy='immediate')  
     status = db.Column(db.String())
+
+class FirewallRule(db.Model):
+    """
+    An access control list object
+    """
+    __tablename__ = 'rules'
+    id = db.Column(db.Integer, primary_key=True)    
+    action = db.Column(db.String)  
+    where = db.Column(db.String) 
+    to = db.Column(db.String) 
+    protocol = db.Column(db.String) 
+    port = db.Column(db.String) 
 
 class ACL(db.Model):
     """

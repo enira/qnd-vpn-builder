@@ -6,7 +6,7 @@ import copy
 from flask import request
 from flask_restplus import Resource
 
-from api.vpn.serializers import system 
+from api.vpn.serializers import system, user
 from api.restplus import api
 
 
@@ -49,6 +49,24 @@ class SystemItem(Resource):
                                  "cpu_freq": cpu_max,
                                  "root_disk_pct": root_disk_pct,
                                  "data_disk_pct": data_disk_pct,
+                                })()
+
+        return obj
+
+
+    
+@ns.route('/user')
+@api.response(404, 'User not found.')
+class UserItem(Resource):
+
+    @api.marshal_with(user)
+    def get(self):
+        """
+        Returns User.
+        """
+
+
+        obj = type('',(object,),{"username": "Administrator"
                                 })()
 
         return obj

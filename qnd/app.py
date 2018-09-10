@@ -7,6 +7,7 @@ import settings
 from api.vpn.endpoints.system import ns as vpn_system_namespace
 from api.vpn.endpoints.ui import ns as vpn_ui_namespace
 from api.vpn.endpoints.networks import ns as vpn_networks_namespace
+from api.vpn.endpoints.clients import ns as vpn_clients_namespace
 
 from api.restplus import api
 
@@ -54,6 +55,7 @@ api.init_app(blueprint)
 api.add_namespace(vpn_system_namespace)
 api.add_namespace(vpn_ui_namespace)
 api.add_namespace(vpn_networks_namespace)
+api.add_namespace(vpn_clients_namespace)
 
 app.register_blueprint(blueprint)
 

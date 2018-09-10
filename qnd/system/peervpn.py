@@ -279,5 +279,4 @@ class PeerVPN(object):
                     db.session.add(network)
                     db.session.commit()
 
-
         session.close()

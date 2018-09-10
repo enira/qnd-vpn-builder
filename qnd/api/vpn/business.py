@@ -64,6 +64,71 @@ def delete_network(network_id):
     Delete a network.
     """
     network = db.session.query(Network).filter(Network.id == network_id).one()
-    db.session.delete(pool)
+    network.status = 'deleted'
+    db.session.add(network)
+    db.session.commit()
+
+
+# Clients
+def create_client(data):
+    """
+    Create a new client.
+    """
+    ip = data.get('ip')
+    type = data.get('type')
+    package = data.get('package')
+    network_id = data.get('network_id')
+    network = db.session.query(Network).filter(Network.id == network_id).one()
+    status = 'created'
+
+    client = Client(ip=ip, 
+                    type=type,
+                    package=package,
+                    network=network,
+                    status=status)
+
+    db.session.add(client)
+    db.session.commit()
+
+
+
+def update_client(client_id, data):
+    """
+    Update a client
+    """
+    client = db.session.query(Client).filter(Client.id == client_id).one()
+
+    if data.get('name') != None:
+        name = data.get('name')
+        network.name = name
+
+    if data.get('port') != None:
+        port = data.get('port')
+        network.port = port
+
+    if data.get('password') != None:
+        password = data.get('password')
+        network.password = password
+
+    if data.get('netmask') != None:
+        netmask = data.get('netmask')
+        network.netmask = netmask
+
+    if data.get('ip') != None:
+        ip = data.get('ip')
+        network.ip = ip
+
+    network.status = 'updated'
+
+    db.session.add(network)
+    db.session.commit()
+
+def delete_client(client_id):
+    """
+    Delete a client.
+    """
+    client = db.session.query(Client).filter(Client.id == client_id).one()
+    client.status = 'deleted'
+    db.session.add(client)
     db.session.commit()
 
