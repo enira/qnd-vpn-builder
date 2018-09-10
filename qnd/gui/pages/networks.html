@@ -340,13 +340,14 @@
 		var button = '<button onclick="$EDIT$" type="button" style="width:25px; display: inline-block;" class="btn btn-block btn-primary btn-xs"><i class="fa fa-edit"></i></button><button data-toggle="modal" data-target="#deletemodal" onclick="$DELETE$" style="width:25px; display: inline-block; margin-top:0px; margin-left:10px;" type="button" class="btn btn-block btn-primary btn-xs"><i class="fa fa-trash"></i></button>';
 		
 		$.get( '/api/network/', function( data ) {
-			var contents = '<tr><th>Name</th><th>Type</th><th>Username</th><th>Host</th><th>Arguments</th><th></th></tr>';
+			var contents = '<tr><th>Name</th><th>Subnet</th><th>Port</th><th>Status</th><th></th></tr>';
                 
 			if(typeof data != "undefined" && data != null && data.length > 0){
 				for (var i = 0; i < data.length; i++) {
 					var dobtns = button.replace('$DELETE$', 'confirmdelete(' + data[i].id + ',\'' + data[i].name + '\')');
-					dobtns = dobtns.replace('$EDIT$', 'editdatastore(' + data[i].id + ')');
-					contents = contents + '<tr><td>' + data[i].name + '</td><td>' + '</td><td><span class="pull-right" style="margin-right:3px;">' + dobtns + '</span></td></tr>';
+					dobtns = dobtns.replace('$EDIT$', 'edit_networks(' + data[i].id + ')');
+					contents = contents + '<tr><td>' + data[i].name + '</td><td>' + data[i].ip + '/'+ data[i].netmask + '</td>';
+					contents = contents + '<td>' + data[i].port + '</td><td>' + data[i].status + '</td><td><span class="pull-right" style="margin-right:3px;">' + dobtns + '</span></td></tr>';
 				}
 			}
 			else {
@@ -357,20 +358,20 @@
 		});
 	}
 	
-	function edit_networks() {
+	function edit_networks(id) {
 		$.getJSON( "/api/network/" + id, function( data ) {
 
-		   $("#wizardtitle").html("Edit Datastore")
+		   $("#wizardtitle").html("Edit Network")
 		  
-			$("#inputName" ).val(data.name);
-			$("#inputUsername" ).val(data.username);
-			$("#inputPassword" ).val(data.password);
-			$("#inputHost").val(data.host);
-			$("#inputArguments").val('');
+			$("#inputname" ).val(data.name);
+			$("#inputpassword" ).val(data.password);
+			$("#inputport").val(data.port);
+			$("#inputnetworkip").val(data.ip);
+			
 			$("#inputId").val(data.id);
 			
 			$("#networks_dialog").css('display', 'block');
-			
+			$("#networkstable").css('display', 'none');
 			$(window).scrollTop(0);
 		});
 	}
@@ -441,27 +442,24 @@
 		$("#networkstable").css('display', 'block');
 		$("#inputname" ).val('');
 		$("#inputport" ).val('');
-		$("#inputPassword" ).val('');
-		$("#inputHost").val('');
-		$("#inputArguments").val('');
+		$("#inputpassword" ).val('');
+		$("#inputip").val('');
 	}
 	
 	function confirmdelete(id, title) {
-		$("#deletetxt").html("Are you sure you want to delete the datastore '" + title + "'?");
+		$("#deletetxt").html("Are you sure you want to delete the network '" + title + "'?");
 		
 		$("#confirmdeletebtn").unbind();
 		$("#confirmdeletebtn").bind("click", function(e) { 
-			//alert('Delete ' + id);
 			$('#deletemodal').modal('toggle');
 			
 			$.ajax({
-				url: '/api/xen/datastore/' + id,
+				url: '/api/network/' + id,
 				type: "DELETE"
 			}).done(function() {
-			  //canceldatastore();
-			  var msg = successmsg.replace('$TITLE$', 'Success').replace('$TEXT$', 'Datastore \'' + title + '\' deleted.')
+			  var msg = successmsg.replace('$TITLE$', 'Success').replace('$TEXT$', 'Network \'' + title + '\' deleted.')
 			  $("#messagebox").html(msg);
-			  load();
+			  load_networks();
 			});
 			
 		});

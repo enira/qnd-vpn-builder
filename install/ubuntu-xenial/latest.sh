@@ -56,15 +56,25 @@ mount -o loop -t btrfs /opt/qndvpnbuilder/data.img /opt/qndvpnbuilder/data
 
 # make data folder
 mkdir -p /opt/qndvpnbuilder/data/deploy
+mkdir -p /opt/qndvpnbuilder/data/template
+mkdir -p /opt/qndvpnbuilder/data/tmp
 
 # change ownership
 chown qnd:qnd /opt/qndvpnbuilder/data/deploy
+chown qnd:qnd /opt/qndvpnbuilder/data/template
+chown qnd:qnd /opt/qndvpnbuilder/data/tmp
 
 # mark it as compressed
 chattr +c /opt/qndvpnbuilder/data/deploy
+chattr +c /opt/qndvpnbuilder/data/template
+chattr +c /opt/qndvpnbuilder/data/tmp
 
 systemctl start qnd
 systemctl enable qnd
+
+wget http://director.downloads.raspberrypi.org/raspbian_lite/images/raspbian_lite-2018-06-29/2018-06-27-raspbian-stretch-lite.zip -O /opt/qndvpnbuilder/data/template/2018-06-27-raspbian-stretch-lite.zip 
+unzip /opt/qndvpnbuilder/data/template/2018-06-27-raspbian-stretch-lite.zip -d /opt/qndvpnbuilder/data/template/
+rm /opt/qndvpnbuilder/data/template/2018-06-27-raspbian-stretch-lite.zip
 
 wget https://peervpn.net/files/peervpn-0-044-linux-x86.tar.gz -O /tmp/peervpn-0-044-linux-x86.tar.gz
 cd /tmp

@@ -150,40 +150,68 @@ class PeerVPN(object):
         self.remove_network(network)
         self.add_network(network)
 
-    def build_client_pacakge(self, client):
+    def build_client_pacakge(self, client, session):
         connection = Bridge(self._hostname, self._username, self._password, self._local)
+
 
         # prepare raspberry pi image for zero wireless
         if client.image == 'rzw':
+            # finding the disk mount sector from the image
+            result = connection.command('fdisk -lu /opt/qndvpnbuilder/data/template/2018-06-27-raspbian-stretch-lite.img | grep -i Linux | awk \'{ print $2 }\'')
+
+            offset = 512 * int(result)
+
             # copy the image
-            result = connection.command('cp /opt/qndvpnbuilder/2018-06-27-raspbian-stretch-lite.img /tmp/image' + str(client.id) + '.img')
+            result = connection.command('cp /opt/qndvpnbuilder/data/template/2018-06-27-raspbian-stretch-lite.img /opt/qndvpnbuilder/data/tmp/image' + str(client.id) + '.img')
 
             # create the mount point
             connection.command('mkdir /tmp/image' + str(client.id))
 
-            # finding the disk mount sector from the image
-            result = connection.command('fdisk -lu /opt/qndvpnbuilder/2018-06-27-raspbian-stretch-lite.img | grep -i Linux | awk \'{ print $2 }\'')
-
-            offset = 512 * int(result)
-
             # mount the image
-            result = connection.sudo_command('mount -o loop,offset=' + str(offset) + ' /tmp/image' + str(client.id) + '.img', self._password)
-            
+            result = connection.sudo_command('mount -o loop,offset=' + str(offset) + ' /opt/qndvpnbuilder/data/tmp/image' + str(client.id) + '.img', self._password)
 
+            # create the config file folder
+            result = connection.sudo_command('mkdir /tmp/image' + str(client.id) + '/etc/peervpn/', self._password)
 
             # add the peervpn.conf file
+            contents = self._generate_client(client)
+            result = connection.sudo_command('echo -e \"' + contents + '\" >> /tmp/client_peervpn' + str(client.id) + '.conf', self._password)
+            result = connection.sudo_command('mv /tmp/client_peervpn' + str(client.id) + '.conf /tmp/image' + str(client.id) + '/etc/peervpn/peervpn.conf', self._password)
+
 
             # add the peervpn.service file
+            contents = self._generate_client_service()
+            result = connection.sudo_command('echo -e \"' + contents + '\" >> /tmp/client_peervpn' + str(client.id) + '.service', self._password)
+            result = connection.sudo_command('mv /tmp/client_peervpn' + str(client.id) + '.service /tmp/image' + str(client.id) + '/etc/systemd/system/peervpn.service', self._password)
+
+            # add the rc.local file
+            contents = _generate_rc_local()
+            result = connection.sudo_command('echo -e \"' + contents + '\" >> /tmp/client_rclocal' + str(client.id) , self._password)
+            result = connection.sudo_command('mv /tmp/client_rclocal' + str(client.id) + ' /tmp/image' + str(client.id) + '/etc/rc.local', self._password)
 
             # unmount the image
-
+            result = connection.sudo_command('umount /tmp/image' + str(client.id) , self._password)
+            
             # zip the image
+            result = connection.sudo_command('zip /opt/qndvpnbuilder/data/tmp/image' + str(client.id) + '.img /opt/qndvpnbuilder/data/tmp/image' + str(client.id) + '.zip', self._password)
+
+            # move the zip file
+            result = connection.sudo_command('mv /opt/qndvpnbuilder/data/tmp/image' + str(client.id) + '.zip /opt/qndvpnbuilder/data/deploy/image-' + str(client.id) + '.zip' , self._password)
 
 
         connection.disconnect()
 
 
+    def _generate_client(self, client, public_ip):
 
+        return self._construct([
+            "networkname " + client.network.name,
+            "psk " + client.network.password,
+            "port "+ str(client.network.port),
+            "initpeers " + public_ip + " " + str(client.network.port),
+            "interface peervpn0" ,
+            "ifconfig4 " + client.ip + "/" + str(client.network.netmask)
+            ])
 
     def _generate_config(self, network):
 
@@ -210,6 +238,28 @@ class PeerVPN(object):
             "WantedBy=multi-user.target"
             ])
 
+    def _generate_client_service(self):
+        return self._construct([
+            "[Unit]",
+            "Description=PeerVPN network service",
+            "Wants=network-online.target",
+            "After=network-online.target",
+            "",
+            "[Service]",
+            "ExecStart=/usr/local/bin/peervpn /etc/peervpn/peervpn.conf",
+            "",
+            "[Install]",
+            "WantedBy=multi-user.target"
+            ])
+
+    def _generate_rc_local(self):
+        return self._construct([
+            "#!/bin/sh -e",
+            "",
+            "systemctl start peervpn",
+            "",
+            "exit 0"
+            ])
 
     def _construct(self, lines):
         config = ""
@@ -220,6 +270,20 @@ class PeerVPN(object):
 
     def task_clients(self):
         session = db.session
+
+        # get all clients that require creation
+        created = session.query(Client).filter(Client.status == "created").all()
+        for client in created:
+            client.status = "building"
+            db.session.add(client)
+            db.session.commit()
+
+            self.build_client_pacakge(client, session)
+            service.status = "healthy"
+
+            db.session.add(service)
+            db.session.commit()
+
         session.close()
 
     def task_networks(self):
@@ -264,7 +328,7 @@ class PeerVPN(object):
 
             self.remove_network(service)
             
-            db.session.delete(network)
+            db.session.delete(service)
             db.session.commit()
 
         self._delay = self._delay + 1
