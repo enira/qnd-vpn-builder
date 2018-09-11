@@ -1,5 +1,5 @@
 from database import db
-from database.models import Network
+from database.models import Network, Client
 
 import logging.config
 log = logging.getLogger(__name__)
@@ -76,10 +76,10 @@ def create_client(data):
     """
     ip = data.get('ip')
     type = data.get('type')
-    package = data.get('package')
+    package = ''
     network_id = data.get('network_id')
     network = db.session.query(Network).filter(Network.id == network_id).one()
-    status = 'created'
+    status = 'pending'
 
     client = Client(ip=ip, 
                     type=type,
