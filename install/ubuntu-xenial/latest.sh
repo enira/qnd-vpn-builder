@@ -1,7 +1,4 @@
-!#/bin/bash
-
-# install from
-# wget -O - https://raw.githubusercontent.com/enira/qnd-vpn-builder/install/deploy/ubuntu-xenial/latest.sh | sudo bash
+#!/bin/bash
 
 # update operating system
 apt-get update
@@ -20,7 +17,7 @@ rm /opt/qndvpnbuilder/latest.zip
 mv /opt/qndvpnbuilder/qnd-vpn-builder-master/qnd /opt/qndvpnbuilder/qnd
 
 # install requirements
-pip install -r /opt/qndvpnbuilder/qnd/requirements.txt 
+pip3 install -r /opt/qndvpnbuilder/qnd/requirements.txt 
 
 # move nginx file
 mv /opt/qndvpnbuilder/qnd-vpn-builder-master/install/ubuntu-xenial/nginx.conf /etc/nginx/nginx.conf
@@ -69,22 +66,27 @@ chattr +c /opt/qndvpnbuilder/data/deploy
 chattr +c /opt/qndvpnbuilder/data/template
 chattr +c /opt/qndvpnbuilder/data/tmp
 
-systemctl start qnd
-systemctl enable qnd
-
+# download the latest raspberry pi image
 wget http://director.downloads.raspberrypi.org/raspbian_lite/images/raspbian_lite-2018-06-29/2018-06-27-raspbian-stretch-lite.zip -O /opt/qndvpnbuilder/data/template/2018-06-27-raspbian-stretch-lite.zip 
 unzip /opt/qndvpnbuilder/data/template/2018-06-27-raspbian-stretch-lite.zip -d /opt/qndvpnbuilder/data/template/
 rm /opt/qndvpnbuilder/data/template/2018-06-27-raspbian-stretch-lite.zip
 
+# download the peervpn binaries
 wget https://peervpn.net/files/peervpn-0-044-linux-x86.tar.gz -O /tmp/peervpn-0-044-linux-x86.tar.gz
 cd /tmp
 
+# unpack
 tar xzvf /tmp/peervpn*
 
+# copy the binaries
 mkdir /etc/peervpn
 cp /tmp/peervpn*/peervpn /usr/local/bin
 cp /tmp/peervpn*/peervpn.conf /etc/peervpn/
 	
+# cleanup
 rm -rf /tmp/peervpn
-
 rm -rf /opt/qndvpnbuilder/qnd-vpn-builder-master
+
+# start the service
+systemctl start qnd
+systemctl enable qnd
