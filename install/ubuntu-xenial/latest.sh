@@ -8,7 +8,7 @@ apt-get update
 apt-get -y upgrade
 
 # install all needed packages
-apt-get -y install python3 python3-pip build-essential libssl-dev libffi-dev python-dev git nginx unzip wget
+apt-get -y install python3 python3-pip build-essential libssl-dev libffi-dev python-dev git nginx unzip wget zip
 
 # create the vpn builder folder
 mkdir -p /opt/qndvpnbuilder/
