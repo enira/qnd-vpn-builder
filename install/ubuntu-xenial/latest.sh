@@ -53,18 +53,21 @@ mount -o loop -t btrfs /opt/qndvpnbuilder/data.img /opt/qndvpnbuilder/data
 
 # make data folder
 mkdir -p /opt/qndvpnbuilder/data/deploy
-mkdir -p /opt/qndvpnbuilder/data/template
+mkdir -p /opt/qndvpnbuilder/data/bin
 mkdir -p /opt/qndvpnbuilder/data/tmp
 
 # change ownership
 chown qnd:qnd /opt/qndvpnbuilder/data/deploy
-chown qnd:qnd /opt/qndvpnbuilder/data/template
+chown qnd:qnd /opt/qndvpnbuilder/data/bin
 chown qnd:qnd /opt/qndvpnbuilder/data/tmp
 
 # mark it as compressed
 chattr +c /opt/qndvpnbuilder/data/deploy
-chattr +c /opt/qndvpnbuilder/data/template
+chattr +c /opt/qndvpnbuilder/data/bin
 chattr +c /opt/qndvpnbuilder/data/tmp
+
+# move the binary files - 
+mv /opt/qndvpnbuilder/qnd-vpn-builder-master/resources/ubuntu-xenial/qnd.service /etc/systemd/system/qnd.service
 
 # download the latest raspberry pi image
 wget http://director.downloads.raspberrypi.org/raspbian_lite/images/raspbian_lite-2018-06-29/2018-06-27-raspbian-stretch-lite.zip -O /opt/qndvpnbuilder/data/template/2018-06-27-raspbian-stretch-lite.zip 

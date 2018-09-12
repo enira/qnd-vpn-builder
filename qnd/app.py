@@ -87,6 +87,17 @@ def index():
     """
     return redirect('gui/index.html')
 
+@app.route('/download/<path:path>')
+def send_download(path):
+    """
+    Handler for downloads
+    """
+    download = PeerVPN.instance().download(path)
+    if download != None:
+        return redirect(download)
+    else:
+        return redirect('gui/index.html')
+
 @app.route('/gui/<path:path>')
 def send_gui(path):
     """
