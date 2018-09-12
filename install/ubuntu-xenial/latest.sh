@@ -80,9 +80,9 @@ mv /opt/qndvpnbuilder/qnd-vpn-builder-master/resources/etcher/Etcher-Portable-1.
 mv /opt/qndvpnbuilder/qnd-vpn-builder-master/resources/etcher/Etcher-Portable-1.4.4-x86.exe /opt/qndvpnbuilder/data/bin/etcher/Etcher-Portable-1.4.4-x86.exe
 
 # download the latest raspberry pi image
-wget http://director.downloads.raspberrypi.org/raspbian_lite/images/raspbian_lite-2018-06-29/2018-06-27-raspbian-stretch-lite.zip -O /opt/qndvpnbuilder/data/template/2018-06-27-raspbian-stretch-lite.zip 
-unzip /opt/qndvpnbuilder/data/template/2018-06-27-raspbian-stretch-lite.zip -d /opt/qndvpnbuilder/data/template/
-rm /opt/qndvpnbuilder/data/template/2018-06-27-raspbian-stretch-lite.zip
+wget http://director.downloads.raspberrypi.org/raspbian_lite/images/raspbian_lite-2018-06-29/2018-06-27-raspbian-stretch-lite.zip -O /opt/qndvpnbuilder/data/bin/2018-06-27-raspbian-stretch-lite.zip 
+unzip /opt/qndvpnbuilder/data/bin/2018-06-27-raspbian-stretch-lite.zip -d /opt/qndvpnbuilder/data/bin/
+rm /opt/qndvpnbuilder/data/bin/2018-06-27-raspbian-stretch-lite.zip
 
 # download the peervpn binaries
 wget https://peervpn.net/files/peervpn-0-044-linux-x86.tar.gz -O /tmp/peervpn-0-044-linux-x86.tar.gz
@@ -95,6 +95,10 @@ tar xzvf /tmp/peervpn*
 mkdir /etc/peervpn
 cp /tmp/peervpn*/peervpn /usr/local/bin
 cp /tmp/peervpn*/peervpn.conf /etc/peervpn/
+
+# copy the binary files - peervpn x64
+mkdir -p /opt/qndvpnbuilder/data/bin/peervpn/x64/
+cp /tmp/peervpn*/peervpn /opt/qndvpnbuilder/data/bin/peervpn/x64
 	
 # cleanup
 rm -rf /tmp/peervpn
