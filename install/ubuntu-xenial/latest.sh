@@ -66,8 +66,18 @@ chattr +c /opt/qndvpnbuilder/data/deploy
 chattr +c /opt/qndvpnbuilder/data/bin
 chattr +c /opt/qndvpnbuilder/data/tmp
 
-# move the binary files - 
-mv /opt/qndvpnbuilder/qnd-vpn-builder-master/resources/ubuntu-xenial/qnd.service /etc/systemd/system/qnd.service
+# move the binary files - peervpn arm
+mkdir -p /opt/qndvpnbuilder/data/bin/peervpn/arm/
+mv /opt/qndvpnbuilder/qnd-vpn-builder-master/resources/peervpn/arm/peervpn /opt/qndvpnbuilder/data/bin/peervpn/arm/peervpn
+
+# move the binary files - peervpn win32
+mkdir -p /opt/qndvpnbuilder/data/bin/peervpn/win32/
+mv /opt/qndvpnbuilder/qnd-vpn-builder-master/resources/peervpn/win32/peervpn.exe /opt/qndvpnbuilder/data/bin/peervpn/win32/peervpn.exe
+
+# move the binary files - etcher
+mkdir -p /opt/qndvpnbuilder/data/bin/etcher/
+mv /opt/qndvpnbuilder/qnd-vpn-builder-master/resources/etcher/Etcher-Portable-1.4.4-x64.exe /opt/qndvpnbuilder/data/bin/etcher/Etcher-Portable-1.4.4-x64.exe
+mv /opt/qndvpnbuilder/qnd-vpn-builder-master/resources/etcher/Etcher-Portable-1.4.4-x86.exe /opt/qndvpnbuilder/data/bin/etcher/Etcher-Portable-1.4.4-x86.exe
 
 # download the latest raspberry pi image
 wget http://director.downloads.raspberrypi.org/raspbian_lite/images/raspbian_lite-2018-06-29/2018-06-27-raspbian-stretch-lite.zip -O /opt/qndvpnbuilder/data/template/2018-06-27-raspbian-stretch-lite.zip 
