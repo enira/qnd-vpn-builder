@@ -39,6 +39,8 @@ class Client(db.Model):
     ip = db.Column(db.String)
     type = db.Column(db.String(3))   
     package = db.Column(db.String)
+    key = db.Column(db.String)
+    public = db.Column(db.String(1))
 
     network_id = db.Column(db.Integer, db.ForeignKey('networks.id'))                 
     network = db.relationship('Network', foreign_keys=[network_id], lazy='immediate')  
