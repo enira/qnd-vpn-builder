@@ -52,7 +52,7 @@ mkfs.btrfs -m single /opt/qndvpnbuilder/data.img
 mount -o loop -t btrfs /opt/qndvpnbuilder/data.img /opt/qndvpnbuilder/data
 
 # make data folder
-mkdir -p /opt/qndvpnbuilder/data/deploy
+mkdir -p /opt/qndvpnbuilder/data/deploy/packages
 mkdir -p /opt/qndvpnbuilder/data/bin
 mkdir -p /opt/qndvpnbuilder/data/tmp
 
@@ -103,6 +103,9 @@ cp /tmp/peervpn*/peervpn /opt/qndvpnbuilder/data/bin/peervpn/x64
 # cleanup
 rm -rf /tmp/peervpn
 rm -rf /opt/qndvpnbuilder/qnd-vpn-builder-master
+
+# setting rights
+chown -R qnd:qnd qndvpnbuilder/
 
 # start the service
 systemctl start qnd

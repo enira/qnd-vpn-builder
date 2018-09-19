@@ -4,6 +4,7 @@ import logging
 import os 
 
 import uuid
+import json
 
 import logging.config
 log = logging.getLogger(__name__)
@@ -67,7 +68,7 @@ class PeerVPN(object):
             value = None
 
         for package in clients:
-            value = package.key
+            value = package.package
 
         session.close()
 
@@ -171,7 +172,7 @@ class PeerVPN(object):
         connection = Bridge(self._hostname, self._username, self._password, self._local)
 
         # prepare raspberry pi image for zero wireless
-        if client.type == 'rzw':
+        if client.type == 'rzw' or client.type == 'rz':
             client.status = "copying"
             session.add(client)
             session.commit()
@@ -213,7 +214,15 @@ class PeerVPN(object):
             result = connection.sudo_command('mv /tmp/client_rclocal' + str(client.id) + ' /tmp/image' + str(client.id) + '/etc/rc.local', self._password)
 
             # add raspberry pi executables
-            result = connection.sudo_command('cp /opt/qndvpnbuilder/data/bin/peervpn/arm/peervpn /tmp/image' + str(client.id) + '/usr/local/bin/peervpn', self._password)
+            #result = connection.sudo_command('cp /opt/qndvpnbuilder/data/bin/peervpn/arm/peervpn /tmp/image' + str(client.id) + '/usr/local/bin/peervpn', self._password)
+
+            if client.type == 'rzw':
+                # zero wifi
+                arguments = json.loads(client.arguments)
+                contents = self._generate_wpa_supplicant(arguments["ssid"], arguments["password"])
+
+                result = connection.sudo_command('echo -e \"' + contents + '\" >> /tmp/client_wpa' + str(client.id) , self._password)
+                result = connection.sudo_command('mv /tmp/client_wpa' + str(client.id) + ' /tmp/image' + str(client.id) + '/etc/wpa_supplicant/wpa_supplicant.conf', self._password)
 
             # unmount the image
             result = connection.sudo_command('umount /tmp/image' + str(client.id) , self._password)
@@ -228,7 +237,7 @@ class PeerVPN(object):
             # move the zip file
             package = str(uuid.uuid4())
 
-            result = connection.sudo_command('mv /opt/qndvpnbuilder/data/tmp/image' + str(client.id) + '.zip /opt/qndvpnbuilder/data/deploy/' + package + '.zip' , self._password)
+            result = connection.sudo_command('mv /opt/qndvpnbuilder/data/tmp/image' + str(client.id) + '.zip /opt/qndvpnbuilder/data/deploy/packages/' + package + '.zip' , self._password)
             client.package = package
             client.key = str(uuid.uuid4())
             client.status = "cleanup"
@@ -241,9 +250,15 @@ class PeerVPN(object):
 
         connection.disconnect()
 
+    def _generate_wpa_supplicant(self, ssid, password):
+        return self._construct([
+            "network={",
+            "    ssid=\"" + ssid + "\"",
+            "    psk=\"" + password + "\"",
+            "}"
+            ])
 
     def _generate_client(self, client, public_ip):
-
         return self._construct([
             "networkname " + client.network.name,
             "psk " + client.network.password,
@@ -294,11 +309,32 @@ class PeerVPN(object):
 
     def _generate_rc_local(self):
         return self._construct([
-            "#!/bin/sh -e",
-            "",
-            "systemctl start peervpn",
-            "",
-            "exit 0"
+            '#!/bin/sh -e',
+            '',
+            'FILE=\\"/home/pi/.initialized\\"',
+            '',
+            'if [ -f \\"\\$FILE\\" ];',
+            'then',
+            '   echo \\"Client bootstrapped.\\"',
+            'else',
+            '   echo \\"Preparing...\\"',
+            '   apt-get update',
+            '   apt-get -y upgrade',
+            '   apt install -y libssl1.0-dev',
+            '   cd /tmp',
+            '   wget https://peervpn.net/files/peervpn-0-044.tar.gz',
+            '   tar xzvf peervpn*',
+            '   cd /tmp/peervpn-0-044',
+            '   make',
+            '   make install',
+            '   cp /tmp/peervpn*/peervpn /usr/local/bin',
+            '   systemctl enable peervpn',
+            '   touch /home/pi/.initialized',
+            '   echo \\"Done.\\"',
+            '   reboot',
+            'fi',
+            '',
+            'exit 0'
             ])
 
     def _construct(self, lines):
@@ -330,9 +366,6 @@ class PeerVPN(object):
         """
         Check up on tasks
         """
-        
-
-        
         session = db.session
         # get all networks that require creation
         created = session.query(Network).filter(Network.status == "created").all()

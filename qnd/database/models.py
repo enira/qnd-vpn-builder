@@ -45,6 +45,7 @@ class Client(db.Model):
     network_id = db.Column(db.Integer, db.ForeignKey('networks.id'))                 
     network = db.relationship('Network', foreign_keys=[network_id], lazy='immediate')  
     status = db.Column(db.String())
+    parameters = db.Column(db.String())
 
 class FirewallRule(db.Model):
     """

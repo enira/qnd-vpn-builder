@@ -4,12 +4,12 @@ from database.models import Network, Client
 import logging.config
 log = logging.getLogger(__name__)
 
-
 # Networks
 def create_network(data):
     """
     Create a new network.
     """
+    session = db.session
     name = data.get('name')
     port = data.get('port')
     password = data.get('password')
@@ -23,8 +23,9 @@ def create_network(data):
                       ip=ip, status=status, 
                       password = password)
 
-    db.session.add(network)
-    db.session.commit()
+    session.add(network)
+    session.commit()
+    session.close()
 
 
 
@@ -32,7 +33,8 @@ def update_network(network_id, data):
     """
     Update a network
     """
-    network = db.session.query(Network).filter(Network.id == network_id).one()
+    session = db.session
+    network = session.query(Network).filter(Network.id == network_id).one()
 
     if data.get('name') != None:
         name = data.get('name')
@@ -56,17 +58,20 @@ def update_network(network_id, data):
 
     network.status = 'updated'
 
-    db.session.add(network)
-    db.session.commit()
+    session.add(network)
+    session.commit()
+    session.close()
 
 def delete_network(network_id):
     """
     Delete a network.
     """
-    network = db.session.query(Network).filter(Network.id == network_id).one()
+    session = db.session
+    network = session.query(Network).filter(Network.id == network_id).one()
     network.status = 'deleted'
     db.session.add(network)
     db.session.commit()
+    session.close()
 
 
 # Clients
@@ -74,21 +79,26 @@ def create_client(data):
     """
     Create a new client.
     """
+    session = db.session
+
     ip = data.get('ip')
     type = data.get('type')
     package = ''
     network_id = data.get('network_id')
     network = db.session.query(Network).filter(Network.id == network_id).one()
     status = 'pending'
+    arguments = data.get('arguments')
 
     client = Client(ip=ip, 
                     type=type,
                     package=package,
                     network=network,
-                    status=status)
+                    status=status,
+                    parameters=arguments)
 
-    db.session.add(client)
-    db.session.commit()
+    session.add(client)
+    session.commit()
+    session.close()
 
 
 
@@ -96,7 +106,8 @@ def update_client(client_id, data):
     """
     Update a client
     """
-    client = db.session.query(Client).filter(Client.id == client_id).one()
+    session = db.session
+    client = session.query(Client).filter(Client.id == client_id).one()
 
     if data.get('name') != None:
         name = data.get('name')
@@ -120,15 +131,18 @@ def update_client(client_id, data):
 
     network.status = 'updated'
 
-    db.session.add(network)
-    db.session.commit()
+    session.add(network)
+    session.commit()
+    session.close()
 
 def delete_client(client_id):
     """
     Delete a client.
     """
-    client = db.session.query(Client).filter(Client.id == client_id).one()
+    session = db.session
+    client = session.query(Client).filter(Client.id == client_id).one()
     client.status = 'deleted'
     db.session.add(client)
     db.session.commit()
+    session.close()
 

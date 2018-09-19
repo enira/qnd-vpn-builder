@@ -94,7 +94,7 @@ def send_download(path):
     """
     download = PeerVPN.instance().download(path)
     if download != None:
-        return redirect(download)
+        return redirect('packages/' + download + ".zip")
     else:
         return redirect('gui/index.html')
 

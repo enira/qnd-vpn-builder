@@ -61,6 +61,7 @@ client_create = api.model('client_create', {
     'ip': fields.String(required=True, description='The IP of the client'),
     'type': fields.String(required=True, description='Client type'),
     'network_id': fields.Integer(required=True, description='Network id associated'), 
+    'arguments': fields.String(required=True, description='Additional arguments'),
 })
 
 client_update = api.model('client_update', {
@@ -68,6 +69,7 @@ client_update = api.model('client_update', {
     'type': fields.String(required=False, description='Client type'),
     'package': fields.String(required=False, description='Provisioned package'),
     'network_id': fields.Integer(required=False, description='Network id associated'), 
+    'arguments': fields.String(required=False, description='Additional arguments'),
 })
 
 

@@ -182,63 +182,65 @@
 		<!-- -->
 		
 		<!-- Wizard-->
-		<div class="row" id="networks_dialog"  style="display:none">
+		<div class="row" id="packages_dialog"  style="display:none">
         <div class="col-xs-12" >
 		<div class="box box-success">
             <div class="box-header with-border">
-              <h3 id="wizardtitle" class="box-title">Add Network</h3> <input type="hidden" id="inputId" value="(null)">
+              <h3 id="wizardtitle" class="box-title">Add Packages</h3> <input type="hidden" id="inputId" value="(null)">
             </div>
             <!-- /.box-header -->
             <div class="box-body">
               <form class="form-horizontal">
               <div class="box-body">
-                <div class="form-group" >
-                  <label for="machineLabel" class="col-sm-2 control-label">Name</label>
-
-                  <div class="col-sm-10">
-                    <input type="text" class="form-control" id="inputname" placeholder="Network name">
-                  </div>
-                </div>
-				<div class="form-group" >
-                  <label for="machineLabel" class="col-sm-2 control-label">Password</label>
-
-                  <div class="col-sm-10">
-                    <input type="text" class="form-control" id="inputpassword" placeholder="Password">
-                  </div>
-                </div>
-				<div class="form-group" >
-                  <label for="machineLabel" class="col-sm-2 control-label">Port</label>
-
-                  <div class="col-sm-10">
-                    <input type="text" class="form-control" id="inputport" placeholder="7000">
-                  </div>
-                </div>
-				<div class="form-group" >
-                  <label for="machineLabel" class="col-sm-2 control-label">Network IP</label>
-
-                  <div class="col-sm-10">
-                    <input type="text" class="form-control" id="inputnetworkip" placeholder="192.168.100.1">
-                  </div>
-                </div>
-				
+			  
 				<div class="form-group">
-                  <label for="datastoreLabel" class="col-sm-2 control-label">Subnet Mask</label>
+                  <label for="datastoreLabel" class="col-sm-2 control-label">Network</label>
 
                   <div class="col-sm-10">
-						<select id="inputsubnet"class="form-control">
-					<option selected="selected" value="24">/24 (255.255.255.0)</option>
-                    <option value="25">/25 (255.255.255.128)</option>
-					<option value="26">/26 (255.255.255.192)</option>
-					<option value="27">/27 (255.255.255.224)</option>
-					<option value="28">/28 (255.255.255.240)</option>
-					<option value="29">/29 (255.255.255.248)</option>
+						<select id="inputnetwork"class="form-control">
+
+					
+                  </select>
+				  
+                  </div>
+                </div>
+				<div class="form-group">
+                  <label for="datastoreLabel" class="col-sm-2 control-label">Type</label>
+
+                  <div class="col-sm-10">
+						<select id="inputtype"class="form-control">
+                    <option selected="selected" value="rz">Raspberry Pi Zero</option>
+					<option value="rzw">Raspberry Pi Zero Wireless</option>
 					
                   </select>
 				  
                   </div>
                 </div>
 				
+			  
+                <div class="form-group" >
+                  <label for="machineLabel" class="col-sm-2 control-label">Client IP</label>
+
+                  <div class="col-sm-10">
+                    <input type="text" class="form-control" id="inputclientip" placeholder="192.168.100.2">
+                  </div>
+                </div>
 				
+				<div class="form-group" id="argument-rzw-1" style="display:none">
+                  <label for="machineLabel" class="col-sm-2 control-label">WiFi SSID</label>
+
+                  <div class="col-sm-10">
+                    <input type="text" class="form-control" id="inputwifissid" placeholder="WiFi Network Name">
+                  </div>
+                </div>
+				<div class="form-group" id="argument-rzw-2" style="display:none">
+                  <label for="machineLabel" class="col-sm-2 control-label">WiFi password</label>
+
+                  <div class="col-sm-10">
+                    <input type="text" class="form-control" id="inputwifipassword" placeholder="WiFi Password">
+                  </div>
+                </div>
+
               </div>
               
               <!-- /.box-footer -->
@@ -247,7 +249,7 @@
             <!-- /.box-body -->
 			<div class="box-footer">
                 <button type="submit" onclick="cancel_wizard()" class="btn btn-default">Cancel</button>
-                <button type="submit" onclick="save_network()" class="btn btn-info pull-right">Save</button>
+                <button type="submit" onclick="save_package()" class="btn btn-info pull-right">Save</button>
 				
               </div>
           </div>
@@ -262,7 +264,7 @@
         <div class="col-xs-12">
           <div class="box">
             <div class="box-header">
-              <h3 class="box-title">Available packages</h3>
+              <h3 class="box-title">Available Packages</h3>
             </div>
             <!-- /.box-header -->
             <div class="box-body table-responsive no-padding">
@@ -318,7 +320,7 @@
 <!-- Page specific script -->
 <script>
 	function update_system() {
-		$.get('/api/xen/ui/system', function( stats ) {
+		$.get( '/api/ui/system', function( stats ) {
 			$("#cpu_load").attr("aria-valuenow", stats.cpu_load);
 			$("#ram_load").attr("aria-valuenow", stats.ram_pct);
 			$("#cpu_load").attr("style", "width: " + stats.cpu_load + "%");
@@ -386,6 +388,103 @@
 			
 			$("#clients_table").html(contents);
 		});
+		
+		// add networks
+		$.get( '/api/network/', function( data ) {
+			if(typeof data != "undefined" && data != null && data.length > 0){
+				for (var i = 0; i < data.length; i++) {
+					$('#inputnetwork').append($('<option>', {
+						value: data[i].id,
+						text: data[i].name
+					}));
+				}
+			}
+		});
+	}
+	
+	function save_package() {
+		var call = $("#inputId" ).val();
+
+		var clientip = $("#inputclientip" ).val();
+		
+		var type = $("#inputtype option:selected" )[0].value;
+		var network = $("#inputnetwork option:selected" )[0].value;
+		
+		var arguments = "";
+		if(type == "rzw") {
+			var ssid = $("#inputwifissid" ).val();
+			var password = $("#inputwifipassword" ).val();
+			arguments='{ "ssid":"' + ssid + '", "password":"' + password + '" }';
+		}
+		
+		var jsonData = '';
+		
+		if(call == '(null)') {
+			jsonData = '{ "ip": "' + clientip + '", "type": "' + type + '", "network_id": ' + network + ', "arguments": "' + arguments + '"}';
+		
+			$.ajax({
+				url: '/api/client/',
+				type: "POST",
+				dataType: "json",
+				data: jsonData,
+				contentType: "application/json"
+			}).done(function() {
+			
+			  cancel_wizard();
+			  var msg = successmsg.replace('$TITLE$', 'Success').replace('$TEXT$', 'Client \'' + clientip + '\' added.')
+			  
+			  $("#messagebox").html(msg);
+			  load_packages();
+			  
+			  $(window).scrollTop(0);
+			});
+		}
+		/*
+		else {
+			jsonData = '{ "name": "' + name + '", "password": "' + password + '", "port": ' + port + ', "netmask": "' + password + '", "ip": "' + networkip + '", "netmask": ' + subnetmask + ', "id": ' + call + '}';
+			
+			$.ajax({
+				url: '/api/network/' + call,
+				type: "PUT",
+				dataType: "json",
+				data: jsonData,
+				contentType: "application/json"
+			}).done(function() {
+			  cancel_wizard();
+			  var msg = successmsg.replace('$TITLE$', 'Success').replace('$TEXT$', 'Client \'' + name + '\' changed.')
+			  
+			  $("#messagebox").html(msg);
+			  load_networks();
+			  
+			  $(window).scrollTop(0);
+			});
+		}*/
+	}
+	
+	function cancel_wizard() {
+		$("#packages_dialog").css('display', 'none');
+		$("#packagestable").css('display', 'block');
+		$("#inputwifissid" ).val('');
+		$("#inputwifipassword" ).val('');
+	}
+	
+	function add_packages() {
+		$("#wizardtitle").html("Add Package");
+		$("#inputId").val("(null)");
+		$("#packages_dialog").css('display', 'block');
+		$("#packagestable").css('display', 'none');
+		$(window).scrollTop(0);	
+		
+		$("#inputtype").on('change', function() {
+			if ($(this).val() == 'rzw'){
+				$("#argument-rzw-1").css('display', 'block');
+				$("#argument-rzw-2").css('display', 'block');
+			} else {
+				$("#argument-rzw-1").css('display', 'none');
+				$("#argument-rzw-2").css('display', 'none');
+			}
+		});
+		
 	}
 </script>
 </body>
